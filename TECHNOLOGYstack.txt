@@ -1,0 +1,21 @@
+MACHINE LEARNING
+1. XGBoost for regression
+2. Optuna for hyperparameter tuning
+3. MLflow for ML experiment tracking
+
+DATA PREPROCESSING & ANALYTICS
+1. Pandas : data manipulation
+2. NumPy : numerical computing
+3. Scikit-learn : preprocesssing
+4. Great Expectations : data quality checks
+5. Pytest : unit tests
+
+API & DASHBOARD
+1. FastAPI : REST endpoints
+2. Streamlit : interactive UI
+3. Plotly : visualizations
+
+CLOUD INFRASTRUCTURE
+1. AWS : S3, ECS Fargate, ECR, ALB
+2. Docker : containers
+3. GitHub Actions : CI/CD
