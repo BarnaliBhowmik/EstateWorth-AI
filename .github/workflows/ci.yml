@@ -55,11 +55,3 @@ jobs:
 
           docker push $ECR_REGISTRY/estateworth-ai:$IMAGE_TAG
           docker push $ECR_REGISTRY/estateworth-ai:latest
-
-      # Deploy ECS Service
-      - name: Deploy to ECS
-        run: |
-          aws ecs update-service \
-          --cluster housing-api-cluster-ecs \
-          --service estateworth-ai-service \
-          --force-new-deployment
