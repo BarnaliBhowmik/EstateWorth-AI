@@ -7,13 +7,14 @@ FROM --platform=$BUILDPLATFORM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 WORKDIR /app
 
-# Install uv and project deps (from pyproject.toml)
-COPY pyproject.toml uv.lock* ./
-RUN pip install --no-cache-dir uv \
- && uv pip install --system .
+# Install uv
+RUN pip install --no-cache-dir uv
 
-# Copy the app (and data needed by the app)
+# Copy full project first
 COPY . .
+
+# Install dependencies
+RUN uv pip install --system .
 
 # Streamlit config
 ENV STREAMLIT_SERVER_PORT=8501 \

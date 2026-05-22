@@ -1,0 +1,13 @@
+venv/
+.git/
+__pycache__/
+.ipynb_checkpoints/
+mlruns/
+notebooks/
+tests/
+*.csv
+*.parquet
+*.zip
+*.pkl
+data/
+.environments
