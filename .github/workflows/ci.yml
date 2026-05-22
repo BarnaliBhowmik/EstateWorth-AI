@@ -2,15 +2,19 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
+      # Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -18,47 +22,44 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # Login to Amazon ECR
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Build and push housing-api image
-      - name: Build, Tag, and Push housing-api
+      # Build Docker image
+      - name: Build Docker image
+        run: |
+          IMAGE_TAG=${GITHUB_SHA}
+
+          docker build \
+            -f Dockerfile.streamlit \
+            -t estateworth-ai:$IMAGE_TAG .
+
+      # Tag Docker image
+      - name: Tag Docker image
         run: |
           IMAGE_TAG=${GITHUB_SHA}
           ECR_REGISTRY=718118589282.dkr.ecr.ap-south-1.amazonaws.com
-          ECR_REPOSITORY=housing-api
 
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag estateworth-ai:$IMAGE_TAG \
+            $ECR_REGISTRY/estateworth-ai:$IMAGE_TAG
 
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker tag estateworth-ai:$IMAGE_TAG \
+            $ECR_REGISTRY/estateworth-ai:latest
 
-      # Build and push housing-streamlit image
-      - name: Build, Tag, and Push housing-streamlit
+      # Push image to ECR
+      - name: Push image to ECR
         run: |
           IMAGE_TAG=${GITHUB_SHA}
           ECR_REGISTRY=718118589282.dkr.ecr.ap-south-1.amazonaws.com
-          ECR_REPOSITORY=housing-streamlit
 
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile.streamlit .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/estateworth-ai:$IMAGE_TAG
+          docker push $ECR_REGISTRY/estateworth-ai:latest
 
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-      # Deploy to ECS - API
-      - name: Deploy housing-api-service
+      # Deploy ECS Service
+      - name: Deploy to ECS
         run: |
           aws ecs update-service \
-            --cluster housing-api-cluster-ecs \
-            --service housing-api-service \
-            --force-new-deployment
-
-      # Deploy to ECS - Streamlit
-      - name: Deploy housing-streamlit-service
-        run: |
-          aws ecs update-service \
-            --cluster housing-api-cluster-ecs \
-            --service housing-streamlit-service \
+            --cluster estateworth-ai-cluster \
+            --service estateworth-ai-service \
             --force-new-deployment
